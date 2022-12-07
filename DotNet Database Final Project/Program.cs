@@ -279,7 +279,7 @@ namespace MovieLibraryConsole
                                 foreach (var rresult in topReviews)
                                 {
                                     reviewCount++;
-                                    Console.WriteLine($"\t{reviewCount}) [ Rating {rresult.Rating} - given by User {rresult.User.Id}: [Age: {rresult.User.Age}, Gender: {rresult.User.Gender}, ZIP Code: {rresult.User.ZipCode}, Occupation: {rresult.User.Occupation.Name}] ]");
+                                    Console.Write($"\t{reviewCount}) [ Rating {rresult.Rating} - given by User {rresult.User.Id}: [Age: {rresult.User.Age}, Gender: {rresult.User.Gender}, ZIP Code: {rresult.User.ZipCode}, Occupation: {rresult.User.Occupation.Name}] ]\n");
                                 }
                                 logger.LogInformation($"{reviewCount} reviews found for Movie {movieCheck.Id}, with ratings totalling {context.UserMovies.Where(m => m.Movie == movieCheck).Sum(r => r.Rating)}.");
                             }
