@@ -572,7 +572,7 @@ namespace MovieLibraryConsole
                                             break;
                                         case "5": // 5. Delete User
                                             {
-                                                var userReviews = context.UserMovies.Include(u => u.User).Where(um => um.User == userCheck).ToList();
+                                                var userReviews = context.UserMovies.Include(m => m.Movie).Where(u => u.User == userCheck).ToList();
                                                 foreach (var rresult in userReviews)
                                                 {
                                                     context.UserMovies.Remove(rresult);
