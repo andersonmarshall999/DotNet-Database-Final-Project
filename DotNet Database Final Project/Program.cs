@@ -137,10 +137,21 @@ namespace MovieLibraryConsole
                                 Console.Write("Enter Movie ID to Edit: ");
                                 var movieSearch = Console.ReadLine();
 
-                                var movieCheck = context.Movies.Where(x => x.Id == Convert.ToInt64(movieSearch)).FirstOrDefault();
+                                var movieCheck = context.Movies.Include(mg => mg.MovieGenres).ThenInclude(g => g.Genre).Where(x => x.Id == Convert.ToInt64(movieSearch)).FirstOrDefault();
                                 if (movieCheck != null) // if entered movie is valid
                                 {
-                                    Console.WriteLine($"Found Movie {movieCheck.Id}: \"{movieCheck.Title}\"");
+                                    Console.Write($"Found Movie {movieCheck.Id}: \"{movieCheck.Title}\"\n\t[");
+                                    int commaCount = 0;
+                                    foreach (var gresult in movieCheck.MovieGenres)
+                                    {
+                                        if (commaCount > 0)
+                                        {
+                                            Console.Write(",");
+                                        }
+                                        Console.Write($" {gresult.Genre.Name}");
+                                        commaCount++;
+                                    }
+                                    Console.Write(" ]\n");
 
                                     Console.WriteLine("1) Change Title");
                                     Console.WriteLine("2) Edit Genres");
@@ -216,9 +227,25 @@ namespace MovieLibraryConsole
                                             break;
                                         case "3": // 3. Delete Movie
                                             {
-                                                context.Movies.Remove(movieCheck);
-                                                context.SaveChanges();
+                                                var moviesGenres = context.MovieGenres.Include(m => m.Movie).Where(mg => mg.Movie == movieCheck).ToList();
+                                                foreach (var mresult in moviesGenres) // Remove movie genres
+                                                {
+                                                    context.MovieGenres.Remove(mresult);
+                                                    context.SaveChanges();
+                                                    logger.LogInformation($"Removed Genre \"{mresult.Genre.Name}\" from Movie {movieCheck.Id}");
+                                                }
+
+                                                var moviesReviews = context.UserMovies.Include(u => u.User).Where(um => um.Movie == movieCheck).ToList();
+                                                foreach (var rresult in moviesReviews) // Remove movie ratings
+                                                {
+                                                    context.UserMovies.Remove(rresult);
+                                                    context.SaveChanges();
+                                                    logger.LogInformation($"Removed User {rresult.User.Id} Rating from Movie {movieCheck.Id}");
+                                                }
+
+                                                context.Movies.Remove(movieCheck); // Remove movie
                                                 logger.LogInformation($"Removed Movie {movieCheck.Id}");
+                                                context.SaveChanges();
                                             }
                                             break;
                                         default:
@@ -545,9 +572,16 @@ namespace MovieLibraryConsole
                                             break;
                                         case "5": // 5. Delete User
                                             {
+                                                var userReviews = context.UserMovies.Include(u => u.User).Where(um => um.User == userCheck).ToList();
+                                                foreach (var rresult in userReviews)
+                                                {
+                                                    context.UserMovies.Remove(rresult);
+                                                    logger.LogInformation($"Removed User {userCheck.Id} Rating from Movie {rresult.Movie.Id}");
+                                                    context.SaveChanges();
+                                                }
                                                 context.Users.Remove(userCheck);
-                                                context.SaveChanges();
                                                 logger.LogInformation($"Removed User {userCheck.Id}. They will be dearly missed.");
+                                                context.SaveChanges();
                                             }
                                             break;
                                         default:
